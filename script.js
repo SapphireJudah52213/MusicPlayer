@@ -81,7 +81,7 @@ function loadFiles(files) {
 
 async function loadAlbumArt(file) {
 
-	const metadata = await musicMetadata.parseBlob(file);
+	const metadata = await MusicMetadata.parseBlob(file);
 
 
 	let picture = metadata.common.picture?.[0];
