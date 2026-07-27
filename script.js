@@ -79,56 +79,43 @@ function loadFiles(files) {
 	}
 }
 
-async function loadAlbumArt(file) {
+function loadAlbumArt(file) {
 
-	const metadata = await MusicMetadata.parseBlob(file);
+	jsmediatags.read(file, {
 
+		onSuccess: function(tag) {
 
-	let picture = metadata.common.picture?.[0];
+			const picture = tag.tags.picture;
 
-
-	// Apple M4A fallback
-	if (!picture && metadata.native) {
-
-		for (const format in metadata.native) {
-
-			for (const tag of metadata.native[format]) {
-
-				if (tag.id === "covr" || tag.id === "----:com.apple.iTunes:artwork") {
-
-					picture = tag.value;
-
-				}
-
+			if (!picture) {
+				console.log("No artwork found");
+				albumArt.innerHTML = "🎧";
+				return;
 			}
 
+
+			let base64 = "";
+
+			for (let i = 0; i < picture.data.length; i++) {
+				base64 += String.fromCharCode(picture.data[i]);
+			}
+
+
+			const image =
+				`data:${picture.format};base64,${btoa(base64)}`;
+
+
+			albumArt.innerHTML =
+				`<img src="${image}">`;
+
+		},
+
+		onError: function(error) {
+			console.log("Metadata error:", error);
+			albumArt.innerHTML = "🎧";
 		}
 
-	}
-
-
-	if (picture) {
-
-		const blob = new Blob(
-			[picture.data || picture],
-			{type: picture.format || "image/jpeg"}
-		);
-
-
-		const url = URL.createObjectURL(blob);
-
-
-		albumArt.innerHTML =
-		`<img src="${url}">`;
-
-	}
-
-	else {
-
-		console.log("No artwork found");
-		albumArt.innerHTML="🎧";
-
-	}
+	});
 
 }
 
