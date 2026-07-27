@@ -22,6 +22,8 @@ const durationText = document.getElementById("duration");
 
 const albumArt = document.getElementById("albumArt");
 
+const icon = document.getElementById("icon");
+
 
 let songs = []; 
 let currentSong = 0; 
@@ -99,7 +101,9 @@ async function loadAlbumArt(file) {
 		);
 
 		albumArt.innerHTML =
-		`<img src="${URL.createObjectURL(blob)}" style="height:180px; width: 180px">`; 
+		`<img src="${URL.createObjectURL(blob)}">`;
+		
+		icon.href = URL.createObjectURL(blob);
 
 	} else {
 
