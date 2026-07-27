@@ -1,3 +1,5 @@
+import { parseBlob } from "https://cdn.jsdelivr.net/npm/music-metadata-browser/+esm";
+
 const fileInput = document.getElementById("fileInput"); 
 const dropArea = document.getElementById("dropArea");
 
@@ -79,43 +81,15 @@ function loadFiles(files) {
 	}
 }
 
-function loadAlbumArt(file) {
+async function loadAlbumArt(file) {
 
-	jsmediatags.read(file, {
+	const metadata = await musicMetadata.parseBlob(file);
 
-		onSuccess: function(tag) {
+	console.log("COMMON METADATA:");
+	console.log(metadata.common);
 
-			const picture = tag.tags.picture;
-
-			if (!picture) {
-				console.log("No artwork found");
-				albumArt.innerHTML = "🎧";
-				return;
-			}
-
-
-			let base64 = "";
-
-			for (let i = 0; i < picture.data.length; i++) {
-				base64 += String.fromCharCode(picture.data[i]);
-			}
-
-
-			const image =
-				`data:${picture.format};base64,${btoa(base64)}`;
-
-
-			albumArt.innerHTML =
-				`<img src="${image}">`;
-
-		},
-
-		onError: function(error) {
-			console.log("Metadata error:", error);
-			albumArt.innerHTML = "🎧";
-		}
-
-	});
+	console.log("NATIVE METADATA:");
+	console.log(metadata.native);
 
 }
 
