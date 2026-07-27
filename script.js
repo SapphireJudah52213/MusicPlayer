@@ -18,6 +18,8 @@ const playlistElement = document.getElementById("playlist");
 const currentTimeText = document.getElementById("currentTime"); 
 const durationText = document.getElementById("duration");
 
+const albumArt = document.getElementById("albumArt");
+
 
 let songs = []; 
 let currentSong = 0; 
@@ -54,27 +56,81 @@ loadFiles(e.dataTransfer.files);
 
 function loadFiles(files) {
 
-for (let file of files) {
+	for (let file of files) {
 
-	if(file.type.startsWith("audio")) {
+		if(file.type.startsWith("audio")) {
 
-		songs.push({
-			name: file.name,
-			url: URL.createObjectURL(file)
-		});
+			let song = {
+				name: file.name,
+				url: URL.createObjectURL(file),
+				file: file
+			};
+
+			songs.push(song);
+
+		}
+
+	}
+
+	renderPlaylist();
+
+	if(songs.length > 0 && !audio.src) {
+		loadSong(0);
+	}
+}
+
+async function loadAlbumArt(file) {
+
+	const metadata = await musicMetadata.parseBlob(file);
+
+
+	let picture = metadata.common.picture?.[0];
+
+
+	// Apple M4A fallback
+	if (!picture && metadata.native) {
+
+		for (const format in metadata.native) {
+
+			for (const tag of metadata.native[format]) {
+
+				if (tag.id === "covr" || tag.id === "----:com.apple.iTunes:artwork") {
+
+					picture = tag.value;
+
+				}
+
+			}
+
+		}
+
+	}
+
+
+	if (picture) {
+
+		const blob = new Blob(
+			[picture.data || picture],
+			{type: picture.format || "image/jpeg"}
+		);
+
+
+		const url = URL.createObjectURL(blob);
+
+
+		albumArt.innerHTML =
+		`<img src="${url}">`;
+
+	}
+
+	else {
+
+		console.log("No artwork found");
+		albumArt.innerHTML="🎧";
 
 	}
 
 }
-
-renderPlaylist();
-
-if(songs.length > 0 && !audio.src) {
-	loadSong(0);
-}
-}
-
-
 
 
 function renderPlaylist() {
@@ -113,13 +169,16 @@ songs.forEach((song,index)=>{
 
 function loadSong(index){
 
-currentSong = index;
+	currentSong = index;
 
-audio.src = songs[index].url;
+	audio.src = songs[index].url;
 
-songName.textContent = songs[index].name;
+	songName.textContent = songs[index].name;
 
-renderPlaylist();
+	loadAlbumArt(songs[index].file);
+
+	renderPlaylist();
+
 }
 
 
