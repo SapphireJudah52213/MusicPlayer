@@ -83,13 +83,30 @@ function loadFiles(files) {
 
 async function loadAlbumArt(file) {
 
-	const metadata = await musicMetadata.parseBlob(file);
+	const metadata = await parseBlob(file);
 
-	console.log("COMMON METADATA:");
-	console.log(metadata.common);
+	console.log(metadata);
 
-	console.log("NATIVE METADATA:");
-	console.log(metadata.native);
+	const picture = metadata.common.picture?.[0];
+
+	if (picture) {
+
+		const blob = new Blob(
+			[picture.data],
+			{
+				type: picture.format
+			}
+		);
+
+		albumArt.innerHTML =
+		`<img src="${URL.createObjectURL(blob)}">`;
+
+	} else {
+
+		console.log("No artwork found");
+		albumArt.innerHTML = "🎧";
+
+	}
 
 }
 
