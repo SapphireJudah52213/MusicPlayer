@@ -99,7 +99,7 @@ async function loadAlbumArt(file) {
 		);
 
 		albumArt.innerHTML =
-		`<img src="${URL.createObjectURL(blob)}" style="height:180px; width: 180px">`;
+		`<img src="${URL.createObjectURL(blob)}" style="height:180px; width: 180px">`; 
 
 	} else {
 
