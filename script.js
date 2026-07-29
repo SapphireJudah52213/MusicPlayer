@@ -24,10 +24,6 @@ const albumArt = document.getElementById("albumArt");
 
 const icon = document.getElementById("icon");
 
-navigator.mediaSession.setActionHandler("play", playSong);
-navigator.mediaSession.setActionHandler("pause", pauseSong);
-navigator.mediaSession.setActionHandler("nexttrack", nextSong);
-navigator.mediaSession.setActionHandler("previoustrack", previousSong);
 
 let songs = []; 
 let currentSong = 0; 
@@ -131,30 +127,6 @@ async function loadAlbumArt(file) {
 	
 }
 
-function updateMediaSession(title, artist, album, artworkURL, mimeType = "image/jpeg") {
-
-	if (!("mediaSession" in navigator)) return;
-
-	navigator.mediaSession.metadata = new MediaMetadata({
-		title,
-		artist,
-		album,
-		artwork: [
-			{
-				src: artworkURL,
-				sizes: "512x512",
-				type: mimeType
-			},
-			{
-				src: artworkURL,
-				sizes: "1024x1024",
-				type: mimeType
-			}
-		]
-	});
-
-}
-
 function renderPlaylist() {
 
 playlistElement.innerHTML = "";
@@ -187,23 +159,65 @@ songs.forEach((song,index)=>{
 }
 
 
+function updateMediaSession(song, artworkURL = "", mimeType = "image/jpeg") {
 
+	if (!("mediaSession" in navigator)) return;
 
-function loadSong(index){
+	navigator.mediaSession.metadata = new MediaMetadata({
+		title: song.title || song.name || "Unknown Title",
+		artist: song.artist || "",
+		album: song.album || "",
+		artwork: artworkURL
+			? [
+				{
+					src: artworkURL,
+					sizes: "512x512",
+					type: mimeType
+				},
+				{
+					src: artworkURL,
+					sizes: "1024x1024",
+					type: mimeType
+				}
+			]
+			: []
+	});
 
-	currentSong = index;
-
-	audio.src = songs[index].url;
-
-	songName.textContent = songs[index].name;
-
-	loadAlbumArt(songs[index].file);
-
-	renderPlaylist();
+	navigator.mediaSession.setActionHandler("play", playSong);
+	navigator.mediaSession.setActionHandler("pause", pauseSong);
+	navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+	navigator.mediaSession.setActionHandler("previoustrack", previousSong);
 
 }
 
 
+
+function setArtwork(blob, mimeType, song) {
+
+	const artworkURL = URL.createObjectURL(blob);
+
+	albumArt.innerHTML =
+		`<img src="${artworkURL}" draggable="false">`;
+
+	updateMediaSession(song, artworkURL, mimeType);
+
+}
+
+function loadSong(index) {
+
+	currentSong = index;
+
+	const song = songs[index];
+
+	audio.src = song.url;
+
+	songName.textContent = song.name;
+
+	loadAlbumArt(song.file, song);
+
+	renderPlaylist();
+
+}
 
 
 function playSong(){
@@ -249,7 +263,18 @@ nextButton.onclick=()=>{
 nextSong();
 };
 
+function previousSong() {
 
+	currentSong--;
+
+	if (currentSong < 0)
+		currentSong = songs.length - 1;
+
+	loadSong(currentSong);
+
+	playSong();
+
+}
 
 previousButton.onclick=()=>{
 
