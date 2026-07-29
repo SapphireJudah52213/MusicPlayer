@@ -54,6 +54,7 @@ e.preventDefault();
 dropArea.classList.remove("dragover");
 
 loadFiles(e.dataTransfer.files);
+	
 });
 
 
@@ -111,7 +112,20 @@ async function loadAlbumArt(file) {
 		albumArt.innerHTML = "🎧";
 
 	}
+	const artworkURL = URL.createObjectURL(blob);
 
+	navigator.mediaSession.metadata = new MediaMetadata({
+	    title: songs[currentSong].name,
+	    artist: "",
+	    album: "",
+	    artwork: [
+	        {
+	            src: artworkURL,
+	            sizes: "512x512",
+	            type: picture.format
+	        }
+	    ]
+	});
 }
 
 
