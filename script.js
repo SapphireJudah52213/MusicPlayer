@@ -24,6 +24,10 @@ const albumArt = document.getElementById("albumArt");
 
 const icon = document.getElementById("icon");
 
+navigator.mediaSession.setActionHandler("play", playSong);
+navigator.mediaSession.setActionHandler("pause", pauseSong);
+navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+navigator.mediaSession.setActionHandler("previoustrack", previousSong);
 
 let songs = []; 
 let currentSong = 0; 
@@ -112,22 +116,44 @@ async function loadAlbumArt(file) {
 		albumArt.innerHTML = "🎧";
 
 	}
+
 	const artworkURL = URL.createObjectURL(blob);
 
-	navigator.mediaSession.metadata = new MediaMetadata({
-	    title: songs[currentSong].name,
-	    artist: "",
-	    album: "",
-	    artwork: [
-	        {
-	            src: artworkURL,
-	            sizes: "512x512",
-	            type: picture.format
-	        }
-	    ]
-	});
+	albumArt.innerHTML = `<img src="${artworkURL}">`;
+	
+	updateMediaSession(
+		songs[currentSong].name,
+		"",
+		"",
+		artworkURL,
+		picture.format
+	);
+	
 }
 
+function updateMediaSession(title, artist, album, artworkURL, mimeType = "image/jpeg") {
+
+	if (!("mediaSession" in navigator)) return;
+
+	navigator.mediaSession.metadata = new MediaMetadata({
+		title,
+		artist,
+		album,
+		artwork: [
+			{
+				src: artworkURL,
+				sizes: "512x512",
+				type: mimeType
+			},
+			{
+				src: artworkURL,
+				sizes: "1024x1024",
+				type: mimeType
+			}
+		]
+	});
+
+}
 
 function renderPlaylist() {
 
